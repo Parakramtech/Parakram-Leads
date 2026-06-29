@@ -56,6 +56,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from theme import *
 from core.api_client import ParakramAPI, APIError, ErrorSeverity
 from core.setup_engine import SetupEngine, INSTALL_DIR, LOG_FILE, Checkpoint, InstallError
+from core.updater import AutoUpdater, UpdateInfo
+from core.heartbeat import HeartbeatService
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -126,6 +128,12 @@ class ParakramVPSInstaller(ctk.CTk):
         self._build_sidebar()
         self._pages: list[ctk.CTkFrame] = []
         self._build_pages()
+
+        # ── Auto-Update & Heartbeat ──────────────────────────────────
+        self._updater = AutoUpdater(current_version="2.0.0", install_dir=INSTALL_DIR)
+        self._heartbeat: Optional[HeartbeatService] = None
+        self._update_info: Optional[UpdateInfo] = None
+        self._updater.check_async(callback=self._on_update_check_complete)
 
         # ── Crash Recovery ─────────────────────────────────────────────
         self._attempt_recovery()
@@ -907,6 +915,8 @@ class ParakramVPSInstaller(ctk.CTk):
         self._status_label.configure(text="Installation complete!", text_color=GREEN)
         self._log_install("✓ All steps completed successfully")
         self._log_install("✓ Parakram VPS is now operational")
+        # Start heartbeat reporting to backend
+        self._start_heartbeat()
         self.after(1000, lambda: self._show_page(4))
 
     def _on_install_failed(self):
@@ -1025,12 +1035,55 @@ class ParakramVPSInstaller(ctk.CTk):
 
         return page
 
+    # ─── Auto-Update ────────────────────────────────────────────────────
+
+    def _on_update_check_complete(self, update_info: Optional[UpdateInfo]):
+        """Called from background thread when update check finishes."""
+        if update_info is None:
+            return
+        self._update_info = update_info
+        self.after(0, self._show_update_banner)
+
+    def _show_update_banner(self):
+        """Show update notification in the welcome page."""
+        if not self._update_info:
+            return
+        from core.setup_engine import audit
+        audit(
+            "UPDATE_AVAILABLE",
+            f"v{self._update_info.version} (critical={self._update_info.is_critical})",
+            "INFO",
+        )
+
+    # ─── Heartbeat ────────────────────────────────────────────────────
+
+    def _start_heartbeat(self):
+        """Start heartbeat service after successful installation."""
+        if not self._auth_token:
+            return
+        try:
+            vps_id = self._engine.get_config("vps_id") or f"vps-{os.environ.get('COMPUTERNAME', 'unknown').lower()}"
+            self._heartbeat = HeartbeatService(
+                auth_token=self._auth_token,
+                vps_id=vps_id,
+                version="2.0.0",
+                install_dir=INSTALL_DIR,
+            )
+            self._heartbeat.start()
+        except Exception:
+            pass
+
     # ─── Close ──────────────────────────────────────────────────────────
 
     def _on_close(self):
         """Graceful shutdown — release all resources."""
         from core.setup_engine import audit
         audit("APP_CLOSE", "User closed installer", "INFO")
+        try:
+            if self._heartbeat:
+                self._heartbeat.stop()
+        except Exception:
+            pass
         try:
             self._api.close()
         except Exception:
