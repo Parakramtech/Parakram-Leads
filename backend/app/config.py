@@ -96,6 +96,12 @@ class Settings(BaseSettings):
     # GDPR
     DATA_RETENTION_DAYS: int = int(os.getenv("DATA_RETENTION_DAYS", "730"))
 
+    # VPS releases / telemetry
+    VPS_RELEASE_REPO: str = os.getenv("VPS_RELEASE_REPO", "Parakramtech/Parakram-Leads")
+    GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
+    VPS_HEARTBEAT_INTERVAL_SECONDS: int = int(os.getenv("VPS_HEARTBEAT_INTERVAL_SECONDS", "60"))
+    VPS_HEARTBEAT_TTL_SECONDS: int = int(os.getenv("VPS_HEARTBEAT_TTL_SECONDS", "300"))
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

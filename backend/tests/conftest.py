@@ -1,6 +1,5 @@
 """Shared fixtures for the test suite."""
 
-import asyncio
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -17,18 +16,8 @@ TEST_DATABASE_URL = os.getenv(
     "postgresql+asyncpg://sigma:sigma@postgres:5432/sigma_leads_test",
 )
 
-pytest_asyncio.configure_loop_policy = lambda: asyncio.get_event_loop_policy()
-
 def pytest_configure(config):
     config.option.asyncio_mode = "auto"
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create a single event loop for the entire test session."""
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest_asyncio.fixture()
