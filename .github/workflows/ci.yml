@@ -127,3 +127,30 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  linux-vps:
+    name: Linux VPS Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: linux-vps/installer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: linux-vps/installer/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run unit tests
+        run: pytest -q --tb=short
