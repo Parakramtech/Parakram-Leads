@@ -25,6 +25,7 @@ Requirements:
     pip install pyinstaller customtkinter Pillow httpx
 """
 
+import io
 import os
 import sys
 import json
@@ -36,6 +37,11 @@ import ast
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+
+if isinstance(sys.stdout, io.TextIOWrapper):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if isinstance(sys.stderr, io.TextIOWrapper):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  CONFIGURATION

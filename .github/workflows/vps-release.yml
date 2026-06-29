@@ -37,6 +37,9 @@ jobs:
           pip install pyinstaller
 
       - name: Build Windows bundle
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: "utf-8"
         run: python build.py --version ${{ github.event.inputs.version || github.ref_name }}
 
       - name: Upload Windows artifacts
