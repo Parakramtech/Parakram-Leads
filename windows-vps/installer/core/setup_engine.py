@@ -597,7 +597,13 @@ class SetupEngine:
         dashboard_dir = INSTALL_DIR / "dashboard"
         dashboard_dir.mkdir(parents=True, exist_ok=True)
 
-        html = self._generate_dashboard_html()
+        from core.dashboard import generate_dashboard_html, generate_server_script
+
+        # Resolve port first (needed for server script)
+        self.dashboard_port = self._find_available_port()
+        self.set_config("dashboard_port", str(self.dashboard_port))
+
+        html = generate_dashboard_html()
         html_path = dashboard_dir / "index.html"
 
         # Write and verify
@@ -611,13 +617,9 @@ class SetupEngine:
                 recovery_hint="Retry installation"
             )
 
-        server_script = self._generate_server_script()
+        server_script = generate_server_script(self.dashboard_port, str(dashboard_dir))
         ps1_path = dashboard_dir / "dashboard-server.ps1"
         atomic_write(ps1_path, server_script)
-
-        # Resolve port
-        self.dashboard_port = self._find_available_port()
-        self.set_config("dashboard_port", str(self.dashboard_port))
         audit("DASHBOARD", f"Port {self.dashboard_port} allocated", "INFO")
 
         self.progress(30, "Dashboard files verified")
