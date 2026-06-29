@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Design\ Parakram\ Ecosystem\ Website\ \(1\)
+        working-directory: "Design Parakram Ecosystem Website (1)"
 
     steps:
       - uses: actions/checkout@v4

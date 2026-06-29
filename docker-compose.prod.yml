@@ -18,7 +18,7 @@ services:
       - sigma_network
 
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-sigma-lead-intelligence}/backend:${GITHUB_SHA:-latest}
+    image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
       - postgres
@@ -28,7 +28,7 @@ services:
       - sigma_network
 
   celery_worker:
-    image: ghcr.io/${GITHUB_REPOSITORY:-sigma-lead-intelligence}/backend:${GITHUB_SHA:-latest}
+    image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
       - postgres
@@ -39,7 +39,7 @@ services:
       - sigma_network
 
   celery_beat:
-    image: ghcr.io/${GITHUB_REPOSITORY:-sigma-lead-intelligence}/backend:${GITHUB_SHA:-latest}
+    image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
       - postgres
@@ -59,7 +59,7 @@ services:
       - sigma_network
 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-sigma-lead-intelligence}/frontend:${GITHUB_SHA:-latest}
+    image: ghcr.io/varshinicb1/parakram-leads/frontend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
       - backend
