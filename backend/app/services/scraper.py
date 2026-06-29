@@ -119,7 +119,7 @@ async def scrape_google_maps_browser(
         print(f"  Opening Maps: {url}")
         try:
             await page.goto(url, timeout=45000)
-        except:
+        except Exception:
             pass
         await asyncio.sleep(8)
 
@@ -148,7 +148,7 @@ async def scrape_google_maps_browser(
 
                 try:
                     await asyncio.wait_for(page.wait_for_load_state("networkidle"), timeout=8)
-                except:
+                except Exception:
                     pass
 
                 name = ""
@@ -160,7 +160,7 @@ async def scrape_google_maps_browser(
                             skip = ["results", "sign in", "get the most", "updates from", "this area"]
                             if name and len(name) > 2 and not any(s in name.lower() for s in skip):
                                 break
-                except:
+                except Exception:
                     pass
 
                 if not name and card_name:
@@ -189,7 +189,7 @@ async def scrape_google_maps_browser(
                                         break
                                 if phone:
                                     break
-                except:
+                except Exception:
                     pass
 
                 website = ""
@@ -205,7 +205,7 @@ async def scrape_google_maps_browser(
                             if h.startswith("http") and "google.com" not in h and "maps" not in h:
                                 website = h
                                 break
-                except:
+                except Exception:
                     pass
 
                 address = ""
@@ -213,7 +213,7 @@ async def scrape_google_maps_browser(
                     addr_btn = await page.query_selector('button[data-item-id*="address"]')
                     if addr_btn:
                         address = (await addr_btn.inner_text()).strip()[:200]
-                except:
+                except Exception:
                     pass
 
                 if phone and phone not in seen_phones and is_valid_phone(phone):
@@ -240,14 +240,14 @@ async def scrape_google_maps_browser(
                 print(f"    [{i+1}] Timeout")
                 try:
                     await page.keyboard.press("Escape")
-                except:
+                except Exception:
                     pass
                 continue
             except Exception as e:
                 print(f"    [{i+1}] Error: {e}")
                 try:
                     await page.keyboard.press("Escape")
-                except:
+                except Exception:
                     pass
                 continue
 

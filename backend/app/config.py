@@ -1,5 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/2")
 
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-production")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
+    @property
+    def is_valid_secret_key(self) -> bool:
+        return len(self.SECRET_KEY) >= 32
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
@@ -42,10 +45,16 @@ class Settings(BaseSettings):
 
     WHATSAPP_BRIDGE_URL: str = os.getenv("WHATSAPP_BRIDGE_URL", "http://whatsapp-bridge:4000")
 
-    PERSONAL_ALERT_PHONE: str = os.getenv("PERSONAL_ALERT_PHONE", "")
-    PERSONAL_ALERT_EMAIL: str = os.getenv("PERSONAL_ALERT_EMAIL", "")
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    PERSONAL_ALERT_PHONE: str = os.getenv("PERSONAL_ALERT_PHONE", "+917259426670")
+    PERSONAL_ALERT_EMAIL: str = os.getenv("PERSONAL_ALERT_EMAIL", "cbvarshini1@gmail.com")
+
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        raw = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000")
+        return [o.strip() for o in raw.split(",") if o.strip()]
 
     # Database pooling
     DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "20"))
@@ -74,11 +83,20 @@ class Settings(BaseSettings):
     LINKEDIN_EMAIL: str = os.getenv("LINKEDIN_EMAIL", "")
     LINKEDIN_PASSWORD: str = os.getenv("LINKEDIN_PASSWORD", "")
 
+    # Razorpay (India payment gateway)
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "")
+    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+    RAZORPAY_PLAN_ID_EDGE: str = os.getenv("RAZORPAY_PLAN_ID_EDGE", "")
+    RAZORPAY_PLAN_ID_FLEET: str = os.getenv("RAZORPAY_PLAN_ID_FLEET", "")
+
+    # Webhook auth
+    WEBHOOK_SECRET: str = os.getenv("WEBHOOK_SECRET", "")
+
     # GDPR
     DATA_RETENTION_DAYS: int = int(os.getenv("DATA_RETENTION_DAYS", "730"))
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()

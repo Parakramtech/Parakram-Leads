@@ -1,6 +1,25 @@
+import asyncio
 from celery import Celery
 from celery.schedules import crontab
 from app.config import settings
+
+
+def run_async(coro):
+    """Safely run an async coroutine from a sync context (Celery task).
+
+    Handles both cases: no running loop (creates one) and existing loop
+    (uses loop.run_until_complete with a new loop in a separate thread).
+    """
+    try:
+        asyncio.get_running_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
+    except RuntimeError:
+        return asyncio.run(coro)
 
 celery_app = Celery(
     "sigma_worker",

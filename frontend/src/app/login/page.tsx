@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, setToken } from '@/lib/api';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { Sparkles, ArrowRight, TrendingUp, Globe, Zap, Shield, User } from 'lucide-react';
 
 function FloatingParticles() {
@@ -223,7 +224,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-xs text-zinc-600">
+          <GoogleSignInButton mode={mode} onError={setError} />
+
+          <p className="text-center text-xs text-zinc-600">
             {mode === 'login' ? (
               <>Don&apos;t have an account? <button onClick={() => { setMode('register'); setError(''); }} className="text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors font-medium">Register here</button></>
             ) : (

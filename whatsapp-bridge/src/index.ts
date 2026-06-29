@@ -20,35 +20,47 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', connected: client?.isConnected ?? false });
 });
 
-app.get('/qr', async (_req, res) => {
-  const qr = client?.lastQR;
-  if (!qr) {
-    return res.status(404).json({ error: 'No QR available. Check if already connected.' });
+app.get('/qr', async (_req, res, next) => {
+  try {
+    const qr = client?.lastQR;
+    if (!qr) {
+      return res.status(404).json({ error: 'No QR available. Check if already connected.' });
+    }
+    res.json({ qr });
+  } catch (err) {
+    next(err);
   }
-  res.json({ qr });
 });
 
-app.get('/qr/image', async (_req, res) => {
-  const qr = client?.lastQR;
-  if (!qr) {
-    return res.status(404).json({ error: 'No QR available' });
+app.get('/qr/image', async (_req, res, next) => {
+  try {
+    const qr = client?.lastQR;
+    if (!qr) {
+      return res.status(404).json({ error: 'No QR available' });
+    }
+    const { toDataURL } = await import('qrcode');
+    const dataUrl = await toDataURL(qr, { width: 400, margin: 2 });
+    const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+    const img = Buffer.from(base64, 'base64');
+    res.writeHead(200, {
+      'Content-Type': 'image/png',
+      'Content-Length': img.length,
+    });
+    res.end(img);
+  } catch (err) {
+    next(err);
   }
-  const { toDataURL } = await import('qrcode');
-  const dataUrl = await toDataURL(qr, { width: 400, margin: 2 });
-  const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
-  const img = Buffer.from(base64, 'base64');
-  res.writeHead(200, {
-    'Content-Type': 'image/png',
-    'Content-Length': img.length,
-  });
-  res.end(img);
 });
 
-app.get('/status', (_req, res) => {
-  res.json({
-    connected: client?.isConnected ?? false,
-    phone: client?.phoneNumber || null,
-  });
+app.get('/status', (_req, res, next) => {
+  try {
+    res.json({
+      connected: client?.isConnected ?? false,
+      phone: client?.phoneNumber || null,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.post('/send', async (req, res) => {
@@ -69,9 +81,18 @@ app.post('/send', async (req, res) => {
   }
 });
 
-app.post('/disconnect', async (_req, res) => {
-  await client?.disconnect();
-  res.json({ success: true });
+app.post('/disconnect', async (_req, res, next) => {
+  try {
+    await client?.disconnect();
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: err?.message || 'Internal server error' });
 });
 
 async function start() {

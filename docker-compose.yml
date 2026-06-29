@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: sigma
-      POSTGRES_PASSWORD: sigma
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sigma}
       POSTGRES_DB: sigma_leads
     ports:
       - "5432:5432"
@@ -140,6 +140,7 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 
   nginx:
     image: nginx:alpine

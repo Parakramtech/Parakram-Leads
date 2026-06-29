@@ -10,6 +10,7 @@ const NAV_LINKS: { label: string; page: Page }[] = [
   { label: "Services", page: "services" },
   { label: "Work", page: "work" },
   { label: "Products", page: "products" },
+  { label: "Store", page: "store" },
   { label: "About", page: "about" },
   { label: "Contact", page: "contact" },
 ];

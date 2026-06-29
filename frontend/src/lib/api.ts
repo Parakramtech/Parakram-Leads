@@ -67,6 +67,8 @@ export const api = {
       request<{ access_token: string; token_type: string; user: any }>('/auth/login', { method: 'POST', body: data }),
     register: (data: { email: string; password: string; full_name?: string }) =>
       request<{ access_token: string; token_type: string; user: any }>('/auth/register', { method: 'POST', body: data }),
+    google: (credential: string) =>
+      request<{ access_token: string; token_type: string; user: any }>('/auth/google', { method: 'POST', body: { credential } }),
     me: () =>
       request<any>('/auth/me', { token: getToken() || undefined }),
   },

@@ -14,12 +14,17 @@ class UserLogin(BaseModel):
     password: str
 
 
+class GoogleAuth(BaseModel):
+    credential: str
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: str
     full_name: Optional[str] = None
     role: str
     is_active: bool
+    auth_provider: str
 
     model_config = {"from_attributes": True}
 

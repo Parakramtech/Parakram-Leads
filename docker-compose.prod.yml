@@ -1,28 +1,41 @@
 services:
-  postgres:
+   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: sigma
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-sigma}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       POSTGRES_DB: sigma_leads
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - sigma_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigma -d sigma_leads"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-}
     networks:
       - sigma_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file: .env
     networks:
       - sigma_network
@@ -31,8 +44,10 @@ services:
     image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file: .env
     command: celery -A app.workers.celery_app worker -l info -Q default -c 4
     networks:
@@ -42,8 +57,10 @@ services:
     image: ghcr.io/varshinicb1/parakram-leads/backend:${GITHUB_SHA:-latest}
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file: .env
     command: celery -A app.workers.celery_app beat -l info --scheduler celery.beat:PersistentScheduler
     networks:

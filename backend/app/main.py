@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import init_db
-from app.api.v1 import leads, auth, messages, alerts, webhooks, scraper, organizations, intelligence, audit
+from app.api.v1 import leads, auth, messages, alerts, webhooks, scraper, organizations, intelligence, audit, vps_subscription, store
 from app.middleware.logging import StructuredLoggingMiddleware, configure_structlog
 from app.middleware.metrics import PrometheusMetricsMiddleware, metrics_endpoint
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -57,6 +57,12 @@ app.include_router(intelligence.router)
 
 # Audit log routes
 app.include_router(audit.router, prefix="/api/v1")
+
+# VPS subscription routes
+app.include_router(vps_subscription.router, prefix="/api/v1")
+
+# Store management routes
+app.include_router(store.router, prefix="/api/v1")
 
 
 @app.get("/health")

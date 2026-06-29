@@ -7,6 +7,10 @@ from app.models.organization import (
     Organization, Team, UserOrganization, UserTeam,
     OrgRole, TeamRole, SubscriptionTier,
 )
+from app.models.store import (
+    Product, ProductTier, ProductScreenshot, ProductCategory,
+    ProductStatus, ProductPlatform,
+)
 
 __all__ = [
     "Lead", "LeadCategory", "LeadStatus",
@@ -16,4 +20,6 @@ __all__ = [
     "AuditLog",
     "Organization", "Team", "UserOrganization", "UserTeam",
     "OrgRole", "TeamRole", "SubscriptionTier",
+    "Product", "ProductTier", "ProductScreenshot", "ProductCategory",
+    "ProductStatus", "ProductPlatform",
 ]

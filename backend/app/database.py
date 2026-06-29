@@ -1,3 +1,4 @@
+from threading import Lock
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
@@ -6,18 +7,24 @@ from app.config import settings
 class _LazyEngine:
     def __init__(self):
         self._engine = None
+        self._lock = Lock()
+
+    def _get_engine(self):
+        if self._engine is None:
+            with self._lock:
+                if self._engine is None:
+                    self._engine = create_async_engine(
+                        settings.DATABASE_URL,
+                        echo=settings.DEBUG,
+                        pool_size=settings.DB_POOL_SIZE,
+                        max_overflow=settings.DB_MAX_OVERFLOW,
+                        pool_pre_ping=True,
+                        pool_recycle=3600,
+                    )
+        return self._engine
 
     def __getattr__(self, name):
-        if self._engine is None:
-            self._engine = create_async_engine(
-                settings.DATABASE_URL,
-                echo=settings.DEBUG,
-                pool_size=settings.DB_POOL_SIZE,
-                max_overflow=settings.DB_MAX_OVERFLOW,
-                pool_pre_ping=True,
-                pool_recycle=3600,
-            )
-        return getattr(self._engine, name)
+        return getattr(self._get_engine(), name)
 
 
 class _LazySessionFactory:

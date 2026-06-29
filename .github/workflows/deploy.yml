@@ -50,6 +50,7 @@ jobs:
           tags: ghcr.io/varshinicb1/parakram-leads/frontend:latest,ghcr.io/varshinicb1/parakram-leads/frontend:${{ github.sha }}
           build-args: |
             NEXT_PUBLIC_API_URL=${{ vars.PUBLIC_API_URL || 'https://leads.getparakram.in/api/v1' }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

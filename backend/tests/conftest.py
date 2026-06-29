@@ -12,12 +12,6 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from app.database import Base, get_db
-from app.main import app
-from app.models.user import User
-from app.models.organization import Organization, UserOrganization, OrgRole
-from app.utils.security import create_access_token, hash_password
-
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
     "postgresql+asyncpg://sigma:sigma@postgres:5432/sigma_leads_test",
@@ -35,6 +29,8 @@ def event_loop():
 @pytest_asyncio.fixture()
 async def test_db() -> AsyncGenerator[AsyncSession, None]:
     """Create fresh DB tables for each test and tear them down afterwards."""
+    from app.database import Base
+
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
     session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -53,6 +49,8 @@ async def test_db() -> AsyncGenerator[AsyncSession, None]:
 @pytest_asyncio.fixture()
 async def async_client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """HTTPX async client that overrides the get_db dependency with the test DB."""
+    from app.database import get_db
+    from app.main import app
 
     async def _override_get_db():
         yield test_db
@@ -65,8 +63,11 @@ async def async_client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, Non
 
 
 @pytest_asyncio.fixture()
-async def test_user(test_db: AsyncSession) -> User:
+async def test_user(test_db: AsyncSession):
     """Create a test admin user."""
+    from app.models.user import User
+    from app.utils.security import hash_password
+
     user = User(
         id=uuid.uuid4(),
         email="test@example.com",
@@ -82,8 +83,10 @@ async def test_user(test_db: AsyncSession) -> User:
 
 
 @pytest_asyncio.fixture()
-async def test_organization(test_db: AsyncSession, test_user: User) -> Organization:
+async def test_organization(test_db: AsyncSession, test_user):
     """Create a test organization with the test_user as ADMIN member."""
+    from app.models.organization import Organization, UserOrganization, OrgRole
+
     org = Organization(
         id=uuid.uuid4(),
         name="Test Organization",
@@ -111,8 +114,10 @@ async def test_organization(test_db: AsyncSession, test_user: User) -> Organizat
 
 
 @pytest_asyncio.fixture()
-async def auth_headers(test_user: User) -> dict:
+async def auth_headers(test_user):
     """Generate a JWT token for the test user and return Authorization headers."""
+    from app.utils.security import create_access_token
+
     token = create_access_token(data={"sub": str(test_user.id)})
     return {"Authorization": f"Bearer {token}"}
 

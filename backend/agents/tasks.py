@@ -1,8 +1,7 @@
 """Celery tasks for the Parakram Growth Agent — runs autonomously on a schedule."""
 
-import asyncio
 import logging
-from app.workers.celery_app import app
+from app.workers.celery_app import app, run_async
 from agents.parakram_growth_agent import run_acquisition_cycle
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 def run_growth_agent_cycle(self, location: str = "Bangalore", max_leads: int = 30):
     """Run one acquisition cycle for Parakram's own customer growth."""
     try:
-        result = asyncio.run(run_acquisition_cycle(location=location, max_leads=max_leads))
+        result = run_async(run_acquisition_cycle(location=location, max_leads=max_leads))
         logger.info(f"Growth agent cycle complete: {result}")
         return result
     except Exception as exc:

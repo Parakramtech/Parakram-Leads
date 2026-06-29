@@ -1,5 +1,6 @@
 import smtplib
 import ssl
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.config import settings
@@ -7,6 +8,8 @@ from app.models.lead import Lead
 from app.models.message import Message, MessageChannel, MessageStatus
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 
 async def send_email(lead: Lead, message: Message, db: AsyncSession) -> bool:
@@ -57,8 +60,8 @@ async def send_whatsapp_bridge(lead: Lead, message: Message, db: AsyncSession) -
                 message.sent_at = datetime.now(timezone.utc)
                 await db.flush()
                 return True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.exception("WhatsApp bridge send failed")
     message.status = MessageStatus.FAILED
     await db.flush()
     return False
@@ -88,8 +91,8 @@ async def send_whatsapp(lead: Lead, message: Message, db: AsyncSession) -> bool:
                     message.sent_at = datetime.now(timezone.utc)
                     await db.flush()
                     return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.exception("WhatsApp API send failed")
         message.status = MessageStatus.FAILED
         await db.flush()
         return False

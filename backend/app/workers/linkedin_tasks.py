@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.workers.celery_app import celery_app
 from app.config import settings
+from app.workers.celery_app import run_async
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def send_linkedin_message_task(self, lead_id: str) -> dict:
                 return {"status": "skipped", "reason": "no_linkedin_credentials"}
             
             # Send via LinkedIn messenger
-            success = asyncio.run(_send_linkedin_async(linkedin_url, message_text))
+            success = run_async(_send_linkedin_async(linkedin_url, message_text))
             
             if success:
                 lead.outreach_sent = True

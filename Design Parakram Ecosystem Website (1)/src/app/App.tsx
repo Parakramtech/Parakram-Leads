@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import ServicesPage from "./pages/ServicesPage";
 import WorkPage from "./pages/WorkPage";
 import ProductsPage from "./pages/ProductsPage";
+import StorePage from "./pages/StorePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import PlayPage from "./pages/PlayPage";
@@ -39,6 +40,7 @@ function AppInner() {
       case "services": return <ServicesPage setPage={setPage} />;
       case "work":     return <WorkPage />;
       case "products": return <ProductsPage setPage={setPage} />;
+      case "store":    return <StorePage setPage={setPage} />;
       case "about":    return <AboutPage setPage={setPage} />;
       case "contact":  return <ContactPage />;
       case "play":     return <PlayPage />;

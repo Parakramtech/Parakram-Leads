@@ -10,7 +10,7 @@ from app.models.lead import Lead, LeadCategory, LeadStatus
 from app.models.message import Message
 from app.models.organization import Organization, OrgRole, UserOrganization
 from app.models.user import User
-from app.workers.celery_app import celery_app
+from app.workers.celery_app import celery_app, run_async
 
 logger = logging.getLogger(__name__)
 
@@ -102,8 +102,7 @@ def generate_weekly_report_task(self) -> dict:
                             User.id == admin.user_id
                         ).first()
                         if user and user.email:
-                            import asyncio
-                            asyncio.run(
+                            run_async(
                                 provider.send(user.email, subject, html_body)
                             )
                             reports_sent += 1

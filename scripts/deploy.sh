@@ -10,7 +10,7 @@ NC='\033[0m'
 
 # --- Prerequisites ---
 command -v docker >/dev/null 2>&1 || { echo -e "${RED}Docker required. Install: curl -fsSL https://get.docker.com | sh${NC}"; exit 1; }
-command -v docker-compose >/dev/null 2>&1 || { echo -e "${RED}Docker Compose required.${NC}"; exit 1; }
+command -v docker compose >/dev/null 2>&1 || { echo -e "${RED}Docker Compose required.${NC}"; exit 1; }
 
 # --- Get server IP ---
 SERVER_IP=$(curl -s http://checkip.amazonaws.com 2>/dev/null || curl -s https://api.ipify.org 2>/dev/null || echo "YOUR_SERVER_IP")
@@ -70,13 +70,13 @@ fi
 
 # --- Pull & Build ---
 echo -e "${GREEN}1. Building and starting services...${NC}"
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker compose.prod.yml up -d --build
 
 # --- Migrate ---
 echo -e "${GREEN}2. Running database migrations...${NC}"
 sleep 3
-docker-compose -f docker-compose.prod.yml exec -T backend alembic upgrade head 2>/dev/null || \
-    echo -e "${YELLOW}Migration skipped (DB may still be starting). Run manually: docker-compose exec backend alembic upgrade head${NC}"
+docker compose -f docker compose.prod.yml exec -T backend alembic upgrade head 2>/dev/null || \
+    echo -e "${YELLOW}Migration skipped (DB may still be starting). Run manually: docker compose exec backend alembic upgrade head${NC}"
 
 # --- Health check ---
 echo -e "${GREEN}3. Checking health...${NC}"
@@ -99,6 +99,6 @@ echo -e "  3. Add SMTP/Twilio keys in Settings for email/SMS features"
 echo -e "  4. Import leads via CSV or run scrapers"
 echo -e ""
 echo -e "${YELLOW}Commands:${NC}"
-echo -e "  View logs:    docker-compose logs -f"
-echo -e "  Stop:         docker-compose down"
+echo -e "  View logs:    docker compose logs -f"
+echo -e "  Stop:         docker compose down"
 echo -e "  Update:       git pull && ./scripts/deploy.sh"

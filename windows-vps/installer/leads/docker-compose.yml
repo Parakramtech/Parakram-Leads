@@ -1,0 +1,102 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sigma
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: sigma_leads
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - leads_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigma -d sigma_leads"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - leads_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    image: ghcr.io/varshinicb1/parakram-leads/backend:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    networks:
+      - leads_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/auth/me')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  celery_worker:
+    image: ghcr.io/varshinicb1/parakram-leads/backend:latest
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    env_file: .env
+    command: celery -A app.workers.celery_app worker -l info -Q default -c 2
+    networks:
+      - leads_network
+
+  celery_beat:
+    image: ghcr.io/varshinicb1/parakram-leads/backend:latest
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    env_file: .env
+    command: celery -A app.workers.celery_app beat -l info --scheduler celery.beat:PersistentScheduler
+    networks:
+      - leads_network
+
+  whatsapp_bridge:
+    build: ./whatsapp-bridge
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file: .env
+    networks:
+      - leads_network
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx-leads.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - leads_network
+
+volumes:
+  postgres_data:
+
+networks:
+  leads_network:
+    driver: bridge

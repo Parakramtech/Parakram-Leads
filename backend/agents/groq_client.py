@@ -3,7 +3,9 @@ import json
 import os
 from typing import Optional
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
+if not os.getenv("GROQ_API_KEY"):
+    raise RuntimeError("GROQ_API_KEY environment variable is not set")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 _client: Optional[Groq] = None
