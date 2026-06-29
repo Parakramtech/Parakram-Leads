@@ -12,6 +12,7 @@ celery_app = Celery(
         "app.workers.scoring_tasks",
         "app.workers.reporting_tasks",
         "app.workers.intelligence_tasks",
+        "agents.tasks",
     ],
 )
 
@@ -49,6 +50,11 @@ celery_app.conf.update(
             "task": "app.workers.intelligence_tasks.batch_intelligence_scan_task",
             "schedule": crontab(hour="*/6", minute=15),
             "args": (50,),
+        },
+        "parakram-growth-agent": {
+            "task": "agents.tasks.run_growth_agent_cycle",
+            "schedule": crontab(hour="*/8", minute=30),
+            "args": ("Bangalore", 30),
         },
     },
 )
