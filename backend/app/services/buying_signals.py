@@ -12,7 +12,7 @@ Signal categories:
 """
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from app.models.lead import Lead, LeadCategory, LeadStatus
 
@@ -86,7 +86,7 @@ class BuyingSignalDetector:
         self.lead = lead
         self.signals = []
         self.total_weight = 0
-        self.analyzed_at = datetime.utcnow()
+        self.analyzed_at = datetime.now(timezone.utc)
 
     def analyze(self) -> dict:
         self._check_emergency_signals()
@@ -131,7 +131,7 @@ class BuyingSignalDetector:
         if not self.lead.industry:
             return
 
-        current_month = datetime.utcnow().month
+        current_month = datetime.now(timezone.utc).month
         for industry, data in SEASONALITY.items():
             if industry in self.lead.industry.lower() or self.lead.industry.lower() in industry:
                 for peak_month in data["peak_months"]:

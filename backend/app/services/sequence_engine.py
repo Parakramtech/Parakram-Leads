@@ -10,7 +10,7 @@ Trick nobody else does:
 """
 
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from app.models.lead import Lead, LeadCategory, LeadStatus
 
@@ -85,7 +85,7 @@ class Sequence:
     def __init__(self, lead: Lead, steps: list[dict]):
         self.lead = lead
         self.steps = [SequenceStep(**s) for s in steps]
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.now(timezone.utc)
         self.current_step_index = 0
         self.completed = False
         self.channel_performance = {"whatsapp": 0, "email": 0, "linkedin": 0}
@@ -99,7 +99,7 @@ class Sequence:
             return step
         previous_step = self.steps[self.current_step_index - 1]
         if previous_step.sent_at:
-            elapsed = (datetime.utcnow() - previous_step.sent_at).days
+            elapsed = (datetime.now(timezone.utc) - previous_step.sent_at).days
             if elapsed >= step.day:
                 return step
         return None
@@ -109,7 +109,7 @@ class Sequence:
         if channel_override:
             self.steps[self.current_step_index].channel = channel_override
         self.steps[self.current_step_index].sent = True
-        self.steps[self.current_step_index].sent_at = datetime.utcnow()
+        self.steps[self.current_step_index].sent_at = datetime.now(timezone.utc)
         self.current_step_index += 1
         if self.current_step_index >= len(self.steps):
             self.completed = True

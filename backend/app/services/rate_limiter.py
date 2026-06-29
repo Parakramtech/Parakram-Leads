@@ -4,7 +4,7 @@ Tracks request counts per client per endpoint using sorted sets.
 """
 
 from app.config import settings
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 
 
@@ -47,7 +47,7 @@ class RateLimiter:
         r = await self._get_redis()
         key = self._key(client_id, route_group)
         max_requests, window = self._get_limit(route_group, is_authenticated)
-        now = int(datetime.utcnow().timestamp())
+        now = int(datetime.now(timezone.utc).timestamp())
         window_start = now - window
 
         pipeline = r.pipeline()

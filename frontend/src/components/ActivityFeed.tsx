@@ -77,14 +77,14 @@ export default function ActivityFeed() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl p-6 bg-zinc-900/80 border border-zinc-800 shadow-xl">
+      <div className="rounded-2xl p-5 bg-zinc-900/80 border border-zinc-800 shadow-xl">
         <div className="animate-pulse space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3">
+            <div key={i} className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-zinc-800" />
-              <div className="flex-1 space-y-1">
+              <div className="flex-1 space-y-2">
                 <div className="h-3 bg-zinc-800 rounded w-3/4" />
-                <div className="h-2 bg-zinc-800/50 rounded w-1/4" />
+                <div className="h-2 bg-zinc-800/50 rounded w-1/3" />
               </div>
             </div>
           ))}
@@ -94,39 +94,40 @@ export default function ActivityFeed() {
   }
 
   return (
-    <div className="rounded-2xl p-5 bg-zinc-900/80 border border-zinc-800 shadow-xl">
+    <div className="rounded-2xl p-5 bg-zinc-900/80 border border-zinc-800 shadow-xl glow-card">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-amber-400" />
           <h3 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold">Activity Feed</h3>
         </div>
         {recent.length > 0 && (
-          <span className="text-[10px] text-zinc-600">{recent.length} events</span>
+          <span className="px-2 py-0.5 rounded-full bg-zinc-800/50 text-[10px] font-medium text-zinc-500">{recent.length} events</span>
         )}
       </div>
       {recent.length === 0 ? (
-        <div className="text-center py-6">
-          <Activity className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
+        <div className="text-center py-8 animate-fade-in">
+          <Activity className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
           <p className="text-xs text-zinc-600">No recent activity</p>
+          <p className="text-[10px] text-zinc-700 mt-1">Actions will appear here as you work</p>
         </div>
       ) : (
-        <div className="space-y-1 max-h-[360px] overflow-y-auto">
+        <div className="space-y-1 max-h-[380px] overflow-y-auto -mx-1 px-1">
           {recent.map((a, i) => {
             const Icon = a.icon;
             return (
-              <div key={i}>
+              <div key={i} className="opacity-0 animate-slide-up" style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'forwards' }}>
                 {a.link ? (
-                  <Link href={a.link} className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors group">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${a.color}`}>
+                  <Link href={a.link} className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-all duration-200 group">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${a.color} group-hover:scale-105 transition-transform duration-200`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-zinc-300 group-hover:text-zinc-200 transition-colors">{a.text}</p>
-                      <p className="text-[10px] text-zinc-600 mt-0.5">
+                      <p className="text-xs text-zinc-300 group-hover:text-zinc-100 transition-colors leading-relaxed">{a.text}</p>
+                      <p className="text-[11px] text-zinc-600 mt-0.5 font-medium">
                         {new Date(a.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    <ArrowRight className="w-3 h-3 text-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ArrowRight className="w-3 h-3 text-zinc-700 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0 group-hover:translate-x-0.5" />
                   </Link>
                 ) : (
                   <div className="flex items-start gap-3 p-2.5">
@@ -134,8 +135,8 @@ export default function ActivityFeed() {
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-zinc-300">{a.text}</p>
-                      <p className="text-[10px] text-zinc-600 mt-0.5">
+                      <p className="text-xs text-zinc-300 leading-relaxed">{a.text}</p>
+                      <p className="text-[11px] text-zinc-600 mt-0.5 font-medium">
                         {new Date(a.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -146,8 +147,8 @@ export default function ActivityFeed() {
           })}
         </div>
       )}
-      <div className="mt-3 pt-3 border-t border-zinc-800">
-        <Link href="/messages" className="flex items-center justify-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+      <div className="mt-3 pt-3 border-t border-zinc-800/50">
+        <Link href="/messages" className="flex items-center justify-center gap-1.5 py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors rounded-lg hover:bg-zinc-800/30">
           View all activity <ArrowRight className="w-3 h-3" />
         </Link>
       </div>

@@ -20,7 +20,7 @@ from app.utils.security import create_access_token, hash_password
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://sigma:sigma@localhost:5432/sigma_leads_test",
+    "postgresql+asyncpg://sigma:sigma@postgres:5432/sigma_leads_test",
 )
 
 

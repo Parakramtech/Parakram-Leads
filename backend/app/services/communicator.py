@@ -6,7 +6,7 @@ from app.config import settings
 from app.models.lead import Lead
 from app.models.message import Message, MessageChannel, MessageStatus
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 async def send_email(lead: Lead, message: Message, db: AsyncSession) -> bool:
@@ -32,7 +32,7 @@ async def send_email(lead: Lead, message: Message, db: AsyncSession) -> bool:
             server.sendmail(settings.SMTP_FROM, lead.email, msg.as_string())
 
         message.status = MessageStatus.SENT
-        message.sent_at = datetime.utcnow()
+        message.sent_at = datetime.now(timezone.utc)
         await db.flush()
         return True
     except Exception as e:
@@ -54,7 +54,7 @@ async def send_whatsapp_bridge(lead: Lead, message: Message, db: AsyncSession) -
                 data = resp.json()
                 message.external_id = data.get("id", "")
                 message.status = MessageStatus.SENT
-                message.sent_at = datetime.utcnow()
+                message.sent_at = datetime.now(timezone.utc)
                 await db.flush()
                 return True
     except Exception:
@@ -85,7 +85,7 @@ async def send_whatsapp(lead: Lead, message: Message, db: AsyncSession) -> bool:
                     data = resp.json()
                     message.external_id = data.get("messages", [{}])[0].get("id", "")
                     message.status = MessageStatus.SENT
-                    message.sent_at = datetime.utcnow()
+                    message.sent_at = datetime.now(timezone.utc)
                     await db.flush()
                     return True
         except Exception:

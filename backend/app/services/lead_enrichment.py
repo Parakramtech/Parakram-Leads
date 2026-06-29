@@ -1,7 +1,7 @@
 """Lead enrichment service for gathering additional data about leads."""
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from app.models.lead import Lead
 
@@ -43,7 +43,7 @@ async def enrich_lead(lead: Lead) -> dict:
         "business_details": {},
         "enrichment_quality": 0,
         "sources_checked": [],
-        "enriched_at": datetime.utcnow().isoformat(),
+        "enriched_at": datetime.now(timezone.utc).isoformat(),
     }
 
     # Source 1: Extract social profiles from business name + location

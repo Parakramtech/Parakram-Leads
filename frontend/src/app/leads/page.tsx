@@ -212,34 +212,34 @@ export default function LeadsPage() {
       )}
 
       {/* Table */}
-      <div className="rounded-2xl bg-zinc-900/80 border border-zinc-800 shadow-xl overflow-hidden">
+      <div className="rounded-2xl bg-zinc-900/80 border border-zinc-800 shadow-xl overflow-hidden glow-card">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800 bg-zinc-900/50">
                 <th className="w-10 px-4 py-4">
                   <input type="checkbox" checked={leads.length > 0 && selectedIds.size === leads.length}
-                    onChange={toggleSelectAll} className="rounded border-zinc-600 bg-zinc-800 accent-amber-500" />
+                    onChange={toggleSelectAll} className="rounded border-zinc-600 bg-zinc-800 accent-amber-500 cursor-pointer" />
                 </th>
-                <th className="text-left px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('business_name')}>
-                  <div className="flex items-center gap-1">Business <SortIcon field="business_name" /></div>
+                <th className="text-left px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('business_name')}>
+                  <div className="flex items-center gap-1.5">Business <SortIcon field="business_name" /></div>
                 </th>
-                <th className="text-left px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider">Contact</th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('category_flag')}>
-                  <div className="flex items-center justify-center gap-1">Category <SortIcon field="category_flag" /></div>
+                <th className="text-left px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider">Contact</th>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('category_flag')}>
+                  <div className="flex items-center justify-center gap-1.5">Category <SortIcon field="category_flag" /></div>
                 </th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('quality_score')}>
-                  <div className="flex items-center justify-center gap-1">Quality <SortIcon field="quality_score" /></div>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('quality_score')}>
+                  <div className="flex items-center justify-center gap-1.5">Quality <SortIcon field="quality_score" /></div>
                 </th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('opportunity_score')}>
-                  <div className="flex items-center justify-center gap-1">Opportunity <SortIcon field="opportunity_score" /></div>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('opportunity_score')}>
+                  <div className="flex items-center justify-center gap-1.5">Opportunity <SortIcon field="opportunity_score" /></div>
                 </th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('buying_urgency')}>
-                  <div className="flex items-center justify-center gap-1">Urgency <SortIcon field="buying_urgency" /></div>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('buying_urgency')}>
+                  <div className="flex items-center justify-center gap-1.5">Urgency <SortIcon field="buying_urgency" /></div>
                 </th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider">Status</th>
-                <th className="text-center px-4 py-4 font-medium text-zinc-500 text-xs uppercase tracking-wider cursor-pointer" onClick={() => toggleSort('created_at')}>
-                  <div className="flex items-center justify-center gap-1">Created <SortIcon field="created_at" /></div>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider">Status</th>
+                <th className="text-center px-4 py-4 font-semibold text-zinc-500 text-xs uppercase tracking-wider cursor-pointer hover:text-zinc-300 transition-colors" onClick={() => toggleSort('created_at')}>
+                  <div className="flex items-center justify-center gap-1.5">Created <SortIcon field="created_at" /></div>
                 </th>
               </tr>
             </thead>
@@ -250,20 +250,29 @@ export default function LeadsPage() {
                 </td></tr>
               ) : leads.length === 0 ? (
                 <tr><td colSpan={9} className="text-center py-16">
-                  <p className="text-zinc-500">No leads found. {search ? 'Try a different search.' : 'Import leads to get started.'}</p>
+                  <p className="text-sm text-zinc-500">No leads found. {search ? 'Try a different search.' : 'Import leads to get started.'}</p>
                 </td></tr>
               ) : (
-                leads.map((lead) => (
-                  <tr key={lead.id} className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${selectedIds.has(lead.id) ? 'bg-amber-500/5' : ''}`}>
+                leads.map((lead, idx) => (
+                  <tr
+                    key={lead.id}
+                    className={`border-b border-zinc-800/50 transition-all duration-200 opacity-0 animate-slide-up ${
+                      selectedIds.has(lead.id) ? 'bg-amber-500/5' : ''
+                    }`}
+                    style={{ animationDelay: `${idx * 20}ms`, animationFillMode: 'forwards' }}
+                    onMouseEnter={(e) => {
+                      if (!selectedIds.has(lead.id)) e.currentTarget.classList.remove('hover:bg-zinc-800/30');
+                    }}
+                  >
                     <td className="px-4 py-3.5">
                       <input type="checkbox" checked={selectedIds.has(lead.id)} onChange={() => toggleSelect(lead.id)}
-                        className="rounded border-zinc-600 bg-zinc-800 accent-amber-500" />
+                        className="rounded border-zinc-600 bg-zinc-800 accent-amber-500 cursor-pointer" />
                     </td>
                     <td className="px-4 py-3.5">
-                      <Link href={`/leads/${lead.id}`} className="font-medium text-zinc-200 hover:text-amber-400 transition-colors">
+                      <Link href={`/leads/${lead.id}`} className="font-semibold text-zinc-200 hover:text-amber-400 transition-colors">
                         {lead.business_name}
                       </Link>
-                      {lead.industry && <p className="text-[10px] text-zinc-600 mt-0.5">{lead.industry}</p>}
+                      {lead.industry && <p className="text-[11px] text-zinc-600 mt-0.5">{lead.industry}</p>}
                     </td>
                     <td className="px-4 py-3.5 text-xs text-zinc-400">
                       {lead.phone && <p>{lead.phone}</p>}
@@ -281,7 +290,7 @@ export default function LeadsPage() {
                       />
                     </td>
                     <td className="px-4 py-3.5 text-center">
-                      <span className="text-sm font-semibold text-zinc-200">{Math.round(lead.opportunity_score)}</span>
+                      <span className="text-sm font-bold text-zinc-200">{Math.round(lead.opportunity_score)}</span>
                     </td>
                     <td className="px-4 py-3.5 text-center">
                       <span className={`text-xs font-semibold ${lead.buying_urgency >= 70 ? 'text-red-400' : lead.buying_urgency >= 40 ? 'text-amber-400' : 'text-zinc-500'}`}>
@@ -291,7 +300,7 @@ export default function LeadsPage() {
                     <td className="px-4 py-3.5 text-center">
                       <span className={statusBadge(lead.status)}>{lead.status.replace(/_/g, ' ')}</span>
                     </td>
-                    <td className="px-4 py-3.5 text-center text-[10px] text-zinc-600">
+                    <td className="px-4 py-3.5 text-center text-xs text-zinc-600">
                       {new Date(lead.created_at).toLocaleDateString()}
                     </td>
                   </tr>

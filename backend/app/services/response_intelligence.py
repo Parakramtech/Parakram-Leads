@@ -6,7 +6,7 @@ that's faster, cheaper, and works offline. Only escalate to AI for complex repli
 """
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -69,7 +69,7 @@ class ResponseAnalysis:
         self.urgency = 0  # 0-100
         self.should_alert = False
         self.suggested_reply_type = "none"
-        self.analyzed_at = datetime.utcnow()
+        self.analyzed_at = datetime.now(timezone.utc)
 
     def analyze(self) -> dict:
         self._analyze_sentiment()

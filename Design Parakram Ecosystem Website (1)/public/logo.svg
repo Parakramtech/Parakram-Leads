@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 120" fill="none">
+  <defs>
+    <linearGradient id="gold" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#120c04"/>
+      <stop offset="8%" stop-color="#3a2410"/>
+      <stop offset="22%" stop-color="#7a5828"/>
+      <stop offset="38%" stop-color="#c9a96e"/>
+      <stop offset="50%" stop-color="#f5e4a8"/>
+      <stop offset="64%" stop-color="#d4b870"/>
+      <stop offset="80%" stop-color="#9a7240"/>
+      <stop offset="100%" stop-color="#1a0e04"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,245,200,0.3)"/>
+      <stop offset="40%" stop-color="rgba(255,245,200,0)"/>
+      <stop offset="100%" stop-color="rgba(255,200,100,0.06)"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7a4a18"/>
+      <stop offset="50%" stop-color="#f5e4a8"/>
+      <stop offset="100%" stop-color="#7a4a18"/>
+    </linearGradient>
+    <linearGradient id="plume" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5e4a8"/>
+      <stop offset="40%" stop-color="#c9a96e"/>
+      <stop offset="100%" stop-color="#5a3810"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="55" cy="116" rx="35" ry="4" fill="black" opacity="0.4"/>
+  <path d="M42 16Q34 5 24 0Q14-4 8 2Q4 8 8 16Q14 22 24 22L36 20Z" fill="url(#plume)"/>
+  <path d="M42 18Q25 8 10 10" stroke="rgba(245,228,168,0.5)" stroke-width="1" fill="none"/>
+  <path d="M38 110L72 110Q80 110 84 102L84 88Q90 86 92 78L92 65Q95 55 92 44Q88 28 78 18Q66 8 52 10Q38 10 28 20L28 32L42 18L50 16Q68 14 76 28Q84 42 80 58Q78 68 76 78L76 102L38 102Z" fill="url(#gold)"/>
+  <path d="M28 38L56 34L56 48L28 52Z" fill="#060606"/>
+  <path d="M28 38L56 34L56 48L28 52Z" fill="none" stroke="rgba(201,169,110,0.2)" stroke-width="0.8"/>
+  <path d="M28 52L22 60L22 72L28 70Z" fill="url(#gold)"/>
+  <path d="M84 80L96 76L96 94L84 94Z" fill="url(#gold)"/>
+  <path d="M28 20L28 105" stroke="rgba(201,169,110,0.4)" stroke-width="1.5"/>
+  <path d="M28 20Q50 12 76 20" stroke="rgba(245,228,168,0.5)" stroke-width="1" fill="none"/>
+  <path d="M38 110L76 110" stroke="url(#edge)" stroke-width="1" opacity="0.5"/>
+</svg>

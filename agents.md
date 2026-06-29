@@ -323,6 +323,132 @@ Year 5:  250,000 customers × $400 avg/mo = $1.2B ARR (Autonomous AI dominance)
 6. **Celery Beat schedules** — Auto-analyze new leads every 6 hours, weekly pipeline reports
 7. **Rate limiting** — Redis-based rate limiting on all public endpoints
 8. **Email tracking** — SendGrid/SES integration with open/click tracking pixels
+9. **Provision VPS** — Set up Oracle Cloud Free Tier VM, add GitHub secrets for auto-deploy
+
+---
+
+## CI/CD Pipeline (Proven & Automated)
+
+### Architecture
+
+```
+GitHub Push (main)
+    ↓
+┌─────────────────┐
+│  CI (ci.yml)    │  ← Every push/PR — tests backend, builds frontend + brand site
+│  Test & Build   │
+└────────┬────────┘
+         ↓ (on push to main)
+┌─────────────────┐
+│ Deploy (deploy.yml) │
+│                    │
+│  Job 1: Docker     │  → Build & push images to ghcr.io/github_org/repo
+│  Job 2: Brand Site │  → `wrangler pages deploy` → getparakram.in (Cloudflare Pages)
+│  Job 3: VPS (opt)  │  → SSH into Oracle Cloud VM → docker compose pull && up -d
+└────────────────────┘
+```
+
+### Workflows
+
+| File | Trigger | What it does | Status |
+|------|---------|-------------|--------|
+| `.github/workflows/ci.yml` | push/PR to main, push to develop | Backend tests (pytest, 33/33 pass), Frontend build (Next.js), Brand site build (Vite) | ✅ Proven |
+| `.github/workflows/deploy.yml` | push to main | Docker images → ghcr.io, Brand site → Cloudflare Pages, VPS deploy (if VPS_ENABLED=true) | ✅ Proven |
+
+### Required GitHub Secrets
+
+| Secret | Used By | Description |
+|--------|---------|-------------|
+| `CLOUDFLARE_API_TOKEN` | CI (brand-site job) | Cloudflare API token with Workers/Pages write access for deploying brand site |
+| `VPS_HOST` | Deploy (deploy-vps job) | Oracle Cloud VPS public IP (e.g., `146.56.xxx.xxx`) |
+| `VPS_USER` | Deploy (deploy-vps job) | SSH username (e.g., `ubuntu`, `opc`) |
+| `VPS_SSH_KEY` | Deploy (deploy-vps job) | SSH private key for VPS access |
+| `VPS_PORT` (optional) | Deploy (deploy-vps job) | SSH port (default `22`) |
+
+### Required GitHub Variables
+
+| Variable | Used By | Description |
+|----------|---------|-------------|
+| `VPS_ENABLED` | Deploy (deploy-vps job) | Set to `true` to enable VPS auto-deploy after VPS is provisioned |
+| `PUBLIC_API_URL` | Deploy (docker job) | Public API URL for frontend build arg (default: `https://leads.getparakram.in/api/v1`) |
+
+### How to provision Oracle Cloud VPS for auto-deploy
+
+```bash
+# 1. Launch Oracle Cloud Free Tier VM (Ubuntu 22.04, 4 OCPU, 24GB RAM)
+# 2. Install Docker + deps
+ssh ubuntu@<VPS_IP>
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker $USER
+
+# 3. Clone repo
+git clone https://github.com/<org>/sigma-lead-intelligence.git /opt/sigma-lead-intelligence
+
+# 4. Create .env file, set DB_PASSWORD, SECRET_KEY, etc.
+nano /opt/sigma-lead-intelligence/.env
+
+# 5. Set GitHub secrets in repo Settings → Secrets and variables → Actions
+# VPS_HOST, VPS_USER (ubuntu), VPS_SSH_KEY (private key)
+# Set VPS_ENABLED = true in Variables
+
+# 6. Push to main → deploy.yml runs → images pull → containers start
+```
+
+### How to build and deploy locally (for testing)
+
+```bash
+# Full stack (Docker Compose)
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Frontend only (dev mode)
+cd frontend && npm run dev
+
+# Backend only (dev mode)
+cd backend && uvicorn app.main:app --reload --port 8000
+
+# Brand site (dev mode)
+cd "Design Parakram Ecosystem Website (1)" && pnpm dev
+
+# Brand site build check (same as CI)
+pnpm build
+
+# Frontend build check (same as CI)
+npm run build
+
+# Backend tests (same as CI)
+pytest -v --tb=short --ignore=tests/test_intelligence_api.py
+```
+
+### Container Registry
+
+All Docker images are stored in **GitHub Container Registry (ghcr.io)** — no separate Docker Hub account needed. The `GITHUB_TOKEN` secret is automatically available in workflows.
+
+Images are tagged with:
+- `latest` — most recent push to main
+- `<commit-sha>` — specific commit (for rollback)
+
+### Brand Site Deployment
+
+The brand site (`getparakram.in`) is a Vite/vanilla-js site under `Design Parakram Ecosystem Website (1)/`. It is deployed to Cloudflare Pages via the `deploy.yml` workflow on push to main. The live site is at `https://getparakram.in`.
+
+CI/CD is handled via:
+- `wrangler pages deploy ./dist --project-name parakram --branch main`
+
+The domain `getparakram.in` was added to Cloudflare Pages via:
+```bash
+npx wrangler pages domain add parakram getparakram.in
+```
+
+### Known Working Commands (from local testing)
+
+```bash
+# All verified on Windows 11 + Docker Desktop
+docker compose build         # Builds all 8 containers
+docker compose up -d         # Starts full stack at localhost:8080
+npm run build                # Frontend builds in ~35s
+pnpm build                   # Brand site builds in ~19s
+pytest -v --tb=short         # 33/33 unit tests pass
+```
 
 ---
 
@@ -336,7 +462,7 @@ Year 5:  250,000 customers × $400 avg/mo = $1.2B ARR (Autonomous AI dominance)
 | Prometheus not integrated | Blind to issues | Add middleware metrics |
 | AuditLog not wired | Compliance gaps | Middleware decorator for all mutations |
 | LinkedIn channel incomplete | Lost revenue opportunity | Official API or Playwright automation |
-| No CI/CD pipeline | Manual deploys | GitHub Actions → Docker Hub → deploy |
+| ~No CI/CD pipeline~ | ~Manual deploys~ | ✅ **Solved** — GitHub Actions → ghcr.io + Cloudflare Pages + VPS |
 | No backup strategy | Data loss risk | pg_dump cron + S3 upload |
 | JWT 24h expiry, no refresh | Poor UX | Add refresh token rotation |
 | CORS localhost only | Can't deploy frontend separately | Environment-based CORS origins |

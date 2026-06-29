@@ -112,6 +112,6 @@ async def compute_scores(lead: Lead) -> tuple[float, float]:
     lead.buying_urgency = pred.get("urgency", 0)
     lead.optimal_channel = pred.get("optimal_channel")
     lead.recommended_sequence_length = pred.get("recommended_sequence_length", 3)
-    from datetime import datetime
-    lead.last_intelligence_update = datetime.utcnow()
+    from datetime import datetime, timezone
+    lead.last_intelligence_update = datetime.now(timezone.utc)
     return round(dm, 2), round(opp, 2)

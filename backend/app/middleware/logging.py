@@ -126,7 +126,7 @@ def configure_structlog(log_level: str = "INFO", log_format: str = "json"):
 
     structlog.configure(
         processors=processors,
-        wrapper_class=structlog.make_filtering_bound_writer(min_level),
+        wrapper_class=structlog.make_filtering_bound_logger(min_level),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
