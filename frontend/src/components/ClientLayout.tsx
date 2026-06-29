@@ -42,7 +42,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     const token = getToken();
-    if (!token && pathname !== '/login') {
+    const publicPaths = ['/login', '/'];
+    if (!token && !publicPaths.includes(pathname)) {
       router.push('/login');
     } else {
       setAuthenticated(!!token);
@@ -89,7 +90,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     );
   }
 
-  if (pathname === '/login') {
+  const publicPaths = ['/login', '/'];
+  if (publicPaths.includes(pathname)) {
     return <>{children}</>;
   }
 
