@@ -107,14 +107,25 @@ jobs:
           ## Downloads
           | Platform | Asset | Notes |
           |----------|-------|-------|
-          | Windows 10/11 (x64) | \`ParakramVPS-Setup.exe\` | **Unsigned** — on first launch Windows SmartScreen shows a warning. Click **More info → Run anyway**. |
+          | Windows 10/11 (x64) | \`ParakramVPS-Setup.exe\` | **Unsigned** — antivirus false positive possible. See note below. |
           | Linux (Ubuntu/Debian x64) | \`parakram-vps-linux-x64-${VERSION}.tar.gz\` | Extract and run \`sudo ./install.sh\`. |
 
           Verify your download against \`SHA256SUMS.txt\`.
 
+          ## Important Note: Antivirus False Positive
+
+          The Windows EXE is built with **PyInstaller**, which bundles a Python interpreter with the application code. This technique is also used by some malware, so antivirus software may **incorrectly** flag the EXE as suspicious. **This is a false positive.**
+
+          ✅ **The EXE is safe.** The source code is fully open at https://github.com/Parakramtech/Parakram-Leads
+
+          ### If your antivirus blocks it:
+          - **Windows Defender**: Click "More info" → "Run anyway"
+          - **Third-party AV**: Add an exception for ParakramVPS-Setup.exe
+          - **Submit to Microsoft for whitelisting**: https://www.microsoft.com/en-us/wdsi/filesubmission (upload the EXE, select "False positive")
+
           ## Windows install
           1. Download \`ParakramVPS-Setup.exe\`.
-          2. Double-click → **More info → Run anyway** (unsigned build).
+          2. If SmartScreen blocks: Click **More info → Run anyway**.
           3. Follow the setup wizard. The app auto-updates from future releases here.
 
           ## Linux install
@@ -122,6 +133,11 @@ jobs:
           tar -xzf parakram-vps-linux-x64-${VERSION}.tar.gz
           cd parakram-vps-linux-${VERSION}
           sudo ./install.sh
+          \`\`\`
+
+          ## SHA-256 Checksums
+          \`\`\`
+          $(cd out && cat SHA256SUMS.txt)
           \`\`\`
           EOF
 

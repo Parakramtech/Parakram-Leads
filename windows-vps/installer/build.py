@@ -68,6 +68,12 @@ VERSION_FILE = ROOT / "core" / "version.txt"
 # SHA-256 manifest
 MANIFEST_FILE = DIST / "build_manifest.json"
 
+# Windows version info (reduces AV false positives by giving the EXE proper metadata)
+VERSION_INFO_FILE = ROOT / "version_info.txt"
+COMPANY_NAME = "Parakram Technologies"
+COPYRIGHT = f"Copyright © {datetime.now().year} Parakram Technologies. All rights reserved."
+PRODUCT_DESCRIPTION = "Parakram VPS - Turn any Windows laptop into a secure, managed edge VPS"
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  LOGGING
@@ -176,6 +182,53 @@ def clean():
     log("  Cleaned all build directories")
 
 
+def create_version_info(version: str) -> Path:
+    """Create Windows version info resource file.
+    Proper version metadata significantly reduces AV false positive rates."""
+    parts = version.lstrip("v").split(".")
+    major = parts[0] if len(parts) > 0 else "2"
+    minor = parts[1] if len(parts) > 1 else "0"
+    build = parts[2] if len(parts) > 2 else "0"
+    patch = "0"
+
+    content = f"""# UTF-8
+#
+# For more details about fixed file info 'ffi' see:
+# https://pyinstaller.org/en/stable/feature-notes.html#capturing-windows-version-information
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=({major}, {minor}, {build}, {patch}),
+    prodvers=({major}, {minor}, {build}, {patch}),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          u'040904B0',
+          [StringStruct(u'CompanyName', u'{COMPANY_NAME}'),
+          StringStruct(u'FileDescription', u'{PRODUCT_DESCRIPTION}'),
+          StringStruct(u'FileVersion', u'{version}'),
+          StringStruct(u'InternalName', u'{APP_NAME}'),
+          StringStruct(u'LegalCopyright', u'{COPYRIGHT}'),
+          StringStruct(u'OriginalFilename', u'{APP_NAME}.exe'),
+          StringStruct(u'ProductName', u'Parakram VPS'),
+          StringStruct(u'ProductVersion', u'{version}')])
+      ]),
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+"""
+    VERSION_INFO_FILE.write_text(content, encoding="utf-8")
+    log(f"  Version info written to {VERSION_INFO_FILE}")
+    return VERSION_INFO_FILE
+
+
 def build_exe(version: str = "2.0.0") -> Optional[Path]:
     """Build single-file EXE using PyInstaller. Returns path on success."""
     log(f"Building {APP_NAME} v{version}...")
@@ -184,6 +237,9 @@ def build_exe(version: str = "2.0.0") -> Optional[Path]:
     # Write version
     VERSION_FILE.parent.mkdir(parents=True, exist_ok=True)
     VERSION_FILE.write_text(version)
+
+    # Create Windows version info resource (reduces AV false positives)
+    create_version_info(version)
 
     # Build PyInstaller command
     cmd = [
@@ -194,6 +250,9 @@ def build_exe(version: str = "2.0.0") -> Optional[Path]:
         "--name", APP_NAME,
         "--clean",
         "--log-level", "WARN",
+        # Anti-virus false positive reduction flags
+        "--noupx",                          # UPX compression triggers heuristic AV detection
+        "--strip",                          # Remove debug symbols
     ]
 
     # Add icon if available
@@ -202,6 +261,10 @@ def build_exe(version: str = "2.0.0") -> Optional[Path]:
         cmd.extend(["--icon", str(icon_path)])
     else:
         log("No icon.ico found — skipping icon", "WARN")
+
+    # Version info resource (reduces AV false positives)
+    if VERSION_INFO_FILE.exists():
+        cmd.extend(["--version-file", str(VERSION_INFO_FILE)])
 
     # Add data files
     if UI_DIR.exists():

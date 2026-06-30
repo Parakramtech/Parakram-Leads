@@ -29,3 +29,11 @@ postgres_data/
 
 # Generated
 celerybeat-schedule
+
+# Windows VPS installer build artifacts
+windows-vps/installer/dist/
+windows-vps/installer/build/
+windows-vps/installer/*.spec
+windows-vps/installer/version_info.txt
+windows-vps/installer/build.log
+windows-vps/installer/core/version.txt
