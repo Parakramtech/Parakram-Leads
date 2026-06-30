@@ -87,18 +87,47 @@ jobs:
         with:
           path: release-artifacts
 
-      - name: Create release notes
+      - name: Collect distributable artifacts
         run: |
-          cat <<'EOF' > release-notes.md
-          Parakram VPS release
+          set -e
+          mkdir -p out
+          cp release-artifacts/windows-vps/ParakramVPS-Setup.exe out/
+          cp release-artifacts/linux-vps/parakram-vps-linux-x64-*.tar.gz out/
+          cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
 
-          - Windows bundle from `windows-vps/installer/dist`
-          - Linux bundle from `linux-vps/installer/dist`
+      - name: Create release notes
+        env:
+          VERSION: ${{ github.event.inputs.version || github.ref_name }}
+        run: |
+          cat > release-notes.md <<EOF
+          # Parakram VPS ${VERSION}
+
+          Turn any Windows laptop or Linux box into a managed edge VPS — one install, auto-update, live heartbeat to the Parakram fleet dashboard.
+
+          ## Downloads
+          | Platform | Asset | Notes |
+          |----------|-------|-------|
+          | Windows 10/11 (x64) | \`ParakramVPS-Setup.exe\` | **Unsigned** — on first launch Windows SmartScreen shows a warning. Click **More info → Run anyway**. |
+          | Linux (Ubuntu/Debian x64) | \`parakram-vps-linux-x64-${VERSION}.tar.gz\` | Extract and run \`sudo ./install.sh\`. |
+
+          Verify your download against \`SHA256SUMS.txt\`.
+
+          ## Windows install
+          1. Download \`ParakramVPS-Setup.exe\`.
+          2. Double-click → **More info → Run anyway** (unsigned build).
+          3. Follow the setup wizard. The app auto-updates from future releases here.
+
+          ## Linux install
+          \`\`\`bash
+          tar -xzf parakram-vps-linux-x64-${VERSION}.tar.gz
+          cd parakram-vps-linux-${VERSION}
+          sudo ./install.sh
+          \`\`\`
           EOF
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version || github.ref_name }}
-          files: release-artifacts/**/*
+          files: out/*
           body_path: release-notes.md
