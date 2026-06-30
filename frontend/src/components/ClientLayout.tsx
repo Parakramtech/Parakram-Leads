@@ -231,6 +231,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </div>
             </div>
           )}
+          <a
+            href="https://getparakram.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/30 transition-all w-full group mb-1"
+          >
+            <Globe className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+            {sidebarOpen && <span>getparakram.in</span>}
+          </a>
+          {sidebarOpen && (
+            <a
+              href="https://getparakram.in"
+              className="block px-3 py-1 text-[10px] text-zinc-700 hover:text-zinc-500 transition-colors"
+            >
+              Privacy
+            </a>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-all w-full group"

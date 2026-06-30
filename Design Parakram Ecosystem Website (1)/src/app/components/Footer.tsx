@@ -22,7 +22,7 @@ export function Footer({ setPage }: { setPage: (p: Page) => void }) {
           </div>
           {([
             { heading: "Build", links: [["Websites", "services"], ["Mobile Apps", "services"], ["AI Workflows", "services"], ["IoT", "services"]] },
-            { heading: "Company", links: [["Work", "work"], ["Products", "products"], ["About", "about"], ["Contact", "contact"]] },
+            { heading: "Company", links: [["Work", "work"], ["Products", "products"], ["About", "about"], ["Contact", "contact"], ["Privacy", "privacy"]] },
           ] as { heading: string; links: [string, Page][] }[]).map(({ heading, links }) => (
             <div key={heading}>
               <h4 className="text-[10px] font-mono tracking-[0.2em] text-[#2a2a2a] uppercase mb-4">{heading}</h4>

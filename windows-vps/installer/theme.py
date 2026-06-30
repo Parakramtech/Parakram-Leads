@@ -89,13 +89,8 @@ def apply_theme():
             "text_color": WHITE,
         },
     }
-    ctk.ThemeManager.theme["CTk"] = theme["CTk"]
-    ctk.ThemeManager.theme["CTkFrame"] = theme["CTkFrame"]
-    ctk.ThemeManager.theme["CTkEntry"] = theme["CTkEntry"]
-    ctk.ThemeManager.theme["CTkButton"] = theme["CTkButton"]
-    ctk.ThemeManager.theme["CTkLabel"] = theme["CTkLabel"]
-    ctk.ThemeManager.theme["CTkCheckBox"] = theme["CTkCheckBox"]
-    ctk.ThemeManager.theme["CTkProgressBar"] = theme["CTkProgressBar"]
-    ctk.ThemeManager.theme["CTkTextbox"] = theme["CTkTextbox"]
-    ctk.ThemeManager.theme["CTkScrollbar"] = theme["CTkScrollbar"]
-    ctk.ThemeManager.theme["CTkOptionMenu"] = theme["CTkOptionMenu"]
+    for key, val in theme.items():
+        if key in ctk.ThemeManager.theme:
+            ctk.ThemeManager.theme[key].update(val)
+        else:
+            ctk.ThemeManager.theme[key] = val

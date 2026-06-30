@@ -12,6 +12,7 @@ import StorePage from "./pages/StorePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import PlayPage from "./pages/PlayPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 function ScrollProgress() {
   const [progress, setProgress] = useState(0);
@@ -44,6 +45,7 @@ function AppInner() {
       case "about":    return <AboutPage setPage={setPage} />;
       case "contact":  return <ContactPage />;
       case "play":     return <PlayPage />;
+      case "privacy":  return <PrivacyPage />;
       default:         return <HomePage setPage={setPage} />;
     }
   };

@@ -182,17 +182,26 @@ class ParakramVPSInstaller(ctk.CTk):
         self.sidebar.pack_propagate(False)
 
         # Brand header
-        title = ctk.CTkLabel(
-            self.sidebar, text="PARAKRAM", font=("Segoe UI", 14, "bold"),
+        header_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        header_frame.pack(pady=(32, 0))
+
+        logo_dot = ctk.CTkLabel(
+            header_frame, text="⏻", font=("Segoe UI", 18),
             text_color=GOLD,
         )
-        title.pack(pady=(28, 4))
+        logo_dot.pack(pady=(0, 6))
+
+        title = ctk.CTkLabel(
+            header_frame, text="PARAKRAM", font=("Segoe UI", 13, "bold"),
+            text_color=GOLD,
+        )
+        title.pack(pady=(0, 2))
 
         subtitle = ctk.CTkLabel(
-            self.sidebar, text="MISSION CONTROL", font=("Segoe UI", 8),
+            header_frame, text="VPS INSTALLER", font=("Segoe UI", 7),
             text_color=GRAY,
         )
-        subtitle.pack(pady=(0, 28))
+        subtitle.pack(pady=(0, 0))
 
         # Steps
         self._steps = [
@@ -262,27 +271,34 @@ class ParakramVPSInstaller(ctk.CTk):
         spacer = ctk.CTkLabel(page, text="", font=FONT_LARGE)
         spacer.pack(expand=True)
 
-        # Icon / Logo area
+        # Glow effect behind logo
+        glow = ctk.CTkLabel(
+            page, text="", fg_color=GOLD, width=80, height=80,
+            corner_radius=40,
+        )
+        glow.place(relx=0.5, rely=0.18, anchor="center")
+        glow.lower()
+
         logo = ctk.CTkLabel(
-            page, text="⏻", font=("Segoe UI", 48),
+            page, text="⏻", font=("Segoe UI", 52),
             text_color=GOLD,
         )
-        logo.pack(pady=(0, 8))
+        logo.pack(pady=(0, 4))
 
         title = ctk.CTkLabel(
             page, text="Parakram VPS",
             font=FONT_LARGE, text_color=WHITE,
         )
-        title.pack(pady=(0, 8))
+        title.pack(pady=(0, 6))
 
         subtitle = ctk.CTkLabel(
             page,
-            text="Turn any Windows machine into a production-ready\n"
-                 "virtual private server. No cloud bills. No port forwarding.\n"
-                 "No technical expertise required.",
+            text="Turn any Windows laptop into a production-ready\n"
+                 "virtual private server in minutes.\n"
+                 "No cloud bills. No port forwarding. No config.",
             font=FONT_BODY, text_color=GRAY, justify="center",
         )
-        subtitle.pack(pady=(0, 8))
+        subtitle.pack(pady=(0, 6))
 
         # Version info
         from core.setup_engine import INSTALLER_VERSION
@@ -426,6 +442,24 @@ class ParakramVPSInstaller(ctk.CTk):
         )
         self._auth_submit_btn.pack(fill="x", pady=(8, 0))
 
+        # Skip button (offline/local installation)
+        skip_frame = ctk.CTkFrame(page, fg_color="transparent")
+        skip_frame.pack(fill="x", pady=(16, 0))
+        separator = ctk.CTkFrame(skip_frame, height=1, fg_color=DARK_BORDER)
+        separator.pack(fill="x", pady=(0, 12))
+        skip_btn = ctk.CTkButton(
+            skip_frame, text="Skip & Install Locally →",
+            font=("Segoe UI", 11), fg_color="transparent",
+            text_color=GRAY, hover_color=DARK,
+            height=36, command=self._on_skip_auth,
+            cursor="hand2",
+        )
+        skip_btn.pack()
+        ctk.CTkLabel(
+            skip_frame, text="No account needed for local VPS setup",
+            font=FONT_TINY, text_color="#3a3a3a",
+        ).pack()
+
         # Toggle text
         self._auth_alt = ctk.CTkLabel(
             form, text="Already have an account? Sign in",
@@ -545,6 +579,16 @@ class ParakramVPSInstaller(ctk.CTk):
     def _on_auth_error(self, msg: str):
         self._auth_error.configure(text=msg)
 
+    def _on_skip_auth(self):
+        """Skip authentication and proceed with local-only installation."""
+        self._auth_token = None
+        self._user_email = None
+        self._user_name = "Local User"
+        from core.setup_engine import audit
+        audit("AUTH_SKIP", "User skipped authentication, proceeding with local install", "INFO")
+        self._auth_error.configure(text="✓ Continuing without account", text_color=GOLD)
+        self.after(500, lambda: self._show_page(2))
+
     # ═══════════════════════════════════════════════════════════════════
     #  PAGE 2: CONFIGURATION
     # ═══════════════════════════════════════════════════════════════════
@@ -561,7 +605,7 @@ class ParakramVPSInstaller(ctk.CTk):
 
         subtitle = ctk.CTkLabel(
             page,
-            text="Set your preferences below. All settings can be changed later\nafter installation from the management dashboard.",
+            text="Set your preferences. All settings can be changed later from the management dashboard.",
             font=FONT_SMALL, text_color=GRAY, justify="left",
         )
         subtitle.pack(anchor="w", pady=(0, 24))
@@ -700,12 +744,15 @@ class ParakramVPSInstaller(ctk.CTk):
     def _config_section(self, parent: ctk.CTkFrame, heading: str,
                         help_lines: list[str],
                         extra_widget_fn: Optional[callable] = None) -> ctk.CTkFrame:
-        frame = ctk.CTkFrame(parent, fg_color="transparent")
-        frame.pack(fill="x", pady=(0, 16))
+        frame = ctk.CTkFrame(parent, fg_color=DARK, corner_radius=12)
+        frame.pack(fill="x", pady=(0, 12))
 
-        ctk.CTkLabel(frame, text=heading, font=FONT_HEADING, text_color=WHITE).pack(anchor="w")
+        inner = ctk.CTkFrame(frame, fg_color="transparent")
+        inner.pack(fill="x", padx=16, pady=14)
+
+        ctk.CTkLabel(inner, text=heading, font=FONT_HEADING, text_color=GOLD).pack(anchor="w")
         for line in help_lines:
-            ctk.CTkLabel(frame, text=line, font=FONT_TINY, text_color=GRAY, wraplength=450).pack(anchor="w")
+            ctk.CTkLabel(inner, text=line, font=FONT_TINY, text_color=GRAY, wraplength=450).pack(anchor="w")
 
         if extra_widget_fn:
             return extra_widget_fn()
@@ -819,21 +866,23 @@ class ParakramVPSInstaller(ctk.CTk):
 
         ctk.CTkLabel(
             page,
-            text="Setting up your Parakram VPS. This typically takes 2–5 minutes.\n"
-                 "Do not close this window or restart your computer during installation.",
+            text="Setting up your Parakram VPS. This takes 2–5 minutes.\n"
+                 "Do not close this window or restart during installation.",
             font=FONT_SMALL, text_color=GRAY, justify="left",
-        ).pack(anchor="w", pady=(0, 32))
+        ).pack(anchor="w", pady=(0, 20))
 
-        # Progress bar
-        self._progress = ctk.CTkProgressBar(page, width=560, height=10)
-        self._progress.pack(pady=(0, 12))
+        # Progress bar in a styled frame
+        progress_frame = ctk.CTkFrame(page, fg_color=DARK, corner_radius=12)
+        progress_frame.pack(fill="x", pady=(0, 4))
+        self._progress = ctk.CTkProgressBar(progress_frame, height=8, corner_radius=4)
+        self._progress.pack(fill="x", padx=16, pady=16)
         self._progress.set(0)
 
         # Status text
         self._status_label = ctk.CTkLabel(
             page, text="Pre-flight checks...", font=FONT_BODY, text_color=GRAY,
         )
-        self._status_label.pack(pady=(0, 24))
+        self._status_label.pack(pady=(0, 16))
 
         # Progress steps
         self._steps_frame = ctk.CTkFrame(page, fg_color="transparent")

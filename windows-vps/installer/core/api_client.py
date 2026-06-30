@@ -394,7 +394,7 @@ class ParakramAPI:
             )
 
         data = self._request(
-            "POST", "/auth/register",
+            "POST", "/register",
             json_body={"email": email, "password": password, "full_name": full_name},
             label="Signup",
         )
@@ -408,7 +408,7 @@ class ParakramAPI:
             raise APIError("Email and password required", severity=ErrorSeverity.FATAL)
 
         data = self._request(
-            "POST", "/auth/login",
+            "POST", "/login",
             json_body={"email": email, "password": password},
             label="Login",
         )

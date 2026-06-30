@@ -22,7 +22,7 @@ Usage:
     python build.py --version=2.0.0          # Set specific version
 
 Requirements:
-    pip install pyinstaller customtkinter Pillow httpx
+    pip install pyinstaller customtkinter Pillow httpx psutil
 """
 
 import io
@@ -61,7 +61,7 @@ LEADS_DIR = ROOT / "leads"
 WHATSAPP_BRIDGE_DIR = ROOT.parent.parent / "whatsapp-bridge"
 
 MIN_PYTHON = (3, 10)
-REQUIRED_DEPS = ["customtkinter", "PIL", "httpx", "pyinstaller"]
+REQUIRED_DEPS = ["customtkinter", "PIL", "httpx", "psutil", "pyinstaller"]
 IGNORE_DIRS = {"__pycache__", ".git", "venv", ".venv", "env", ".env", "node_modules"}
 VERSION_FILE = ROOT / "core" / "version.txt"
 
@@ -108,7 +108,7 @@ def validate_environment() -> list[str]:
         issues.append(f"Build platform is '{sys.platform}', Windows required for EXE builds")
 
     # Dependencies (map pip name -> importable module name)
-    import_names = {"PIL": "PIL", "pyinstaller": "PyInstaller"}
+    import_names = {"PIL": "PIL", "pyinstaller": "PyInstaller", "psutil": "psutil"}
     for dep in REQUIRED_DEPS:
         module = import_names.get(dep, dep)
         if importlib.util.find_spec(module) is None:
@@ -129,7 +129,7 @@ def install_dependencies():
     log("Ensuring build dependencies...")
     result = subprocess.run(
         [sys.executable, "-m", "pip", "install", "--upgrade",
-         "pyinstaller", "customtkinter", "Pillow", "httpx"],
+         "pyinstaller", "customtkinter", "Pillow", "httpx", "psutil"],
         capture_output=True, text=True,
     )
     if result.returncode != 0:
@@ -496,7 +496,7 @@ def main():
     if issues:
         for i in issues:
             log(f"  ✗ {i}", "ERROR")
-        log("Environment validation failed. Run: pip install pyinstaller customtkinter Pillow httpx")
+        log("Environment validation failed. Run: pip install pyinstaller customtkinter Pillow httpx psutil")
         sys.exit(1)
     log("  ✓ Environment OK")
 
