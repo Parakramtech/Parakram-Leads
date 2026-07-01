@@ -40,6 +40,22 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Node.js download failed" }
   }
   Write-Host "  ✓ Node.js runtime ready ($((Get-Item 'dist/runtime/node.exe').Length / 1MB) MB)" -ForegroundColor Green
+
+  # Step 4b: Download cloudflared (bundled so no install-time download needed)
+  if (-not (Test-Path "dist/runtime/cloudflared.exe")) {
+    Write-Host "[4b/6] Downloading cloudflared..." -ForegroundColor Yellow
+    node scripts/download-cloudflared.mjs 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "cloudflared download failed" }
+  }
+  Write-Host "  ✓ cloudflared ready ($((Get-Item 'dist/runtime/cloudflared.exe').Length / 1MB) MB)" -ForegroundColor Green
+
+  # Step 4c: Download WinSW (wraps the Node backend as a real Windows service)
+  if (-not (Test-Path "dist/runtime/ParakramVPS-svc.exe")) {
+    Write-Host "[4c/6] Downloading WinSW..." -ForegroundColor Yellow
+    node scripts/download-winsw.mjs 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "WinSW download failed" }
+  }
+  Write-Host "  ✓ WinSW ready ($((Get-Item 'dist/runtime/ParakramVPS-svc.exe').Length / 1MB) MB)" -ForegroundColor Green
 }
 finally { Pop-Location }
 
