@@ -49,6 +49,12 @@ jobs:
       - name: Download Node.js runtime
         run: node scripts/download-node.mjs
 
+      - name: Download cloudflared
+        run: node scripts/download-cloudflared.mjs
+
+      - name: Download WinSW (service wrapper)
+        run: node scripts/download-winsw.mjs
+
       - name: Generate WiX file list
         run: .\scripts\generate-wxs.ps1
 
@@ -59,6 +65,65 @@ jobs:
             -out dist\ParakramVPS-$version.msi `
             -bindpath dashboard\dist `
             -arch x64
+
+      - name: Sign the MSI
+        shell: pwsh
+        env:
+          VPS_CODESIGN_PFX_BASE64: ${{ secrets.VPS_CODESIGN_PFX_BASE64 }}
+          VPS_CODESIGN_PASSWORD: ${{ secrets.VPS_CODESIGN_PASSWORD }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          if (-not $env:VPS_CODESIGN_PFX_BASE64) {
+            Write-Host "No signing cert configured; skipping (MSI will be unsigned)."
+            exit 0
+          }
+          $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:VPS_CODESIGN_PFX_BASE64))
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1 -ExpandProperty FullName
+          $msi = Get-Item dist\ParakramVPS-*.msi | Select-Object -First 1
+          & $signtool sign /f $pfxPath /p $env:VPS_CODESIGN_PASSWORD /fd SHA256 `
+            /tr http://timestamp.digicert.com /td SHA256 $msi.FullName
+          if ($LASTEXITCODE -ne 0) { throw "signtool failed with exit code $LASTEXITCODE" }
+          Remove-Item $pfxPath -Force
+          Write-Host "✓ MSI signed"
+
+      - name: Smoke test — install, verify, uninstall on a clean runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $msi = Get-Item dist\ParakramVPS-*.msi | Select-Object -First 1
+          $ilog = "$env:RUNNER_TEMP\install.log"
+          Start-Process msiexec.exe -ArgumentList "/i", "`"$($msi.FullName)`"", "/qn", "/l*v", "`"$ilog`"" -Wait
+          if (-not (Select-String -Path $ilog -Pattern "Installation success" -Quiet)) {
+            Get-Content $ilog | Select-Object -Last 80
+            throw "MSI install failed on clean runner"
+          }
+
+          Start-Sleep -Seconds 3
+          $svc = Get-Service ParakramVPS -ErrorAction SilentlyContinue
+          if (-not $svc -or $svc.Status -ne "Running") {
+            throw "ParakramVPS service is not running after install (status: $($svc.Status))"
+          }
+
+          $resp = Invoke-WebRequest -Uri "http://127.0.0.1:9876" -UseBasicParsing -TimeoutSec 10
+          if ($resp.StatusCode -ne 200) { throw "Dashboard did not respond with 200 (got $($resp.StatusCode))" }
+
+          $sshd = Get-Service sshd -ErrorAction SilentlyContinue
+          if (-not $sshd -or $sshd.Status -ne "Running") { throw "sshd is not running after provisioning" }
+
+          Write-Host "✓ Smoke test passed: service running, dashboard responds, sshd running"
+
+          $ulog = "$env:RUNNER_TEMP\uninstall.log"
+          Start-Process msiexec.exe -ArgumentList "/x", "`"$($msi.FullName)`"", "/qn", "/l*v", "`"$ulog`"" -Wait
+          if (-not (Select-String -Path $ulog -Pattern "Installation success" -Quiet)) {
+            Get-Content $ulog | Select-Object -Last 80
+            throw "MSI uninstall failed on clean runner"
+          }
+          Start-Sleep -Seconds 3
+          if (Test-Path "C:\Program Files\ParakramVPS") { throw "Install directory was not removed on uninstall" }
+          if (Get-Service ParakramVPS -ErrorAction SilentlyContinue) { throw "Service still registered after uninstall" }
+          Write-Host "✓ Uninstall verified clean"
 
       - name: Upload Windows MSI
         uses: actions/upload-artifact@v4
@@ -125,14 +190,14 @@ jobs:
           ## Downloads
           | Platform | Asset | Notes |
           |----------|-------|-------|
-          | Windows 10/11 (x64) | \`ParakramVPS-${VERSION}.msi\` | **Unsigned** — Windows SmartScreen may prompt. See note below. |
+          | Windows 10/11 (x64) | \`ParakramVPS-${VERSION}.msi\` | Code-signed with a self-signed cert — Windows SmartScreen may still prompt on first run. See note below. |
           | Linux (Ubuntu/Debian x64) | \`parakram-vps-linux-x64-${VERSION}.tar.gz\` | Extract and run \`sudo ./install.sh\`. |
 
           Verify your download against \`SHA256SUMS.txt\`.
 
           ## Important Note: Windows SmartScreen
 
-          The Windows MSI is built with **WiX Toolset v7** (industry-standard .msi installer), which avoids the PyInstaller antivirus false-positive issues of the previous EXE format.
+          The Windows MSI is built with **WiX Toolset v7** (industry-standard .msi installer), which avoids the PyInstaller antivirus false-positive issues of the previous EXE format. It is also code-signed, which prevents tampering in transit — but the certificate is currently self-signed (not from a public CA), so SmartScreen may still show a warning until it accumulates reputation or we move to a CA-issued certificate.
 
           ✅ **The MSI is safe.** The source code is fully open at https://github.com/Parakramtech/Parakram-Leads
 
