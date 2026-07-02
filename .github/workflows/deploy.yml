@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -89,7 +89,7 @@ jobs:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: [docker]
-    if: vars.VPS_ENABLED == 'true' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: vars.VPS_ENABLED == 'true' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Check required secrets
